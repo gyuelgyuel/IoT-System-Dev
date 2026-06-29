@@ -1,0 +1,35 @@
+[스마트홈 기본 구조 구현 HW설계 중심]
+스마트 선풍기
+스마트 전등
+컴퓨터 연결하여 원격 조정 (추후 음성인식 or 모션인식 도입)
+
+HW설계 [전원 설계, MCU/driver 선정, 배선 설계(PI/GND)]
+MCU - ESP32-WROOM-32 DevKit (3.3V 20mA)
+    ESP32 선택이유 (다른 선택지 : 아두이노 ATmega328P)
+
+RGB LED Strip - 12V RGB LED Strip
+    전등 (각 RGB 세기 조절 가능, 12V & 수백mA~수A)
+MOSFET - AO3400(소형/저전력), IRLZ44N(크고 안정적) 기반 3채널 logic level MOSFET 모듈
+    MCU의 PWM 핀으로 부터 신호를 받아서 LED의 각 RGB로 전압 세기 증폭 (3.3V -> 12V)
+    Driver ic 쓰지 않는 이유 : 전류가 커지고 PWM 주파수가 높아지면 사용, 모터 정/역회전 필요시 H-Bridge Driver 사용
+Pull Up 저항 - 4.7k옴 ~ 10k옴
+    MOSFET Drain쪽 장치 전원으로 들어가는 전압을 High로 끌어올리기 위한 저항 적용
+    저항값 결정시 노이즈 전류에 대한 전압 변동 차이, low신호일때 소비전력, 스위칭 속도 RC Delay
+Pull Down 저항 - 10k옴
+    MOSFET Gate 전압이 floating 되지 않게, GND쪽에 pull down 저항 적용
+Gate 저항 - 100~220옴
+    전원 인가/방전시 MOSFET Gate를 통한 충전 전류의 피크치를 줄이기 위한 저항
+    Cap 성분, PWM 주파수, 충전 전류에 인한 스위칭 손실(발열) 고려하여 PWM 신호에 악영향을 끼치지 않는 저항 조건 계산해보기
+안정화 Cap - 100uF ~ 470uF (12V 라인), 0.1uF 세라믹 (고주파 노이즈 제거)
+전원 - 12V 파워서플라이 (전류는 LED strip 소비전력 고려해서 결정), LM2596 전원 모듈 (ESP32 5V 입력용)
+점퍼 와이어, 브레드보드
+
+
+    
+
+
+간단한 SW 제어 설계
+<IOT 모드 list>
+취침 - 조명 off, 선풍기 3초 on/off 반복
+일 - 조명 2단계, 선풍기 on
+휴식 - 조명 1단계, 선풍기 on (가능하다면 미풍)
